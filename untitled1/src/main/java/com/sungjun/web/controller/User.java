@@ -2,12 +2,9 @@ package com.sungjun.web.controller;
 
 public class User {
     private Integer id;
-    private String day;
-    private String productName;
-    private Integer amount;
-    private String name;
-    private String phone;
-    private String adr;
+    private String word;
+    private String mean;
+
     public Integer getId() {
         return this.id;
     }
@@ -16,54 +13,22 @@ public class User {
         this.id = id;
     }
 
-    public String getDay() {
-        return this.day;
+    public String getWord() {
+        return this.word;
     }
 
-    public void setDay(String day) {
-        this.day = day;
+    public void setWord(String word) {
+        this.word = word;
     }
 
-    public String getProductName() {
-        return productName;
+    public String getMean() {
+        return mean;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
+    public void setMean(String mean) {
+        this.mean = mean;
     }
 
-    public Integer getAmount() {
-        return this.amount;
-    }
-
-    public void setAmount(int amount) {
-        System.out.println(amount+":유저");
-        this.amount = amount;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPhone() {
-        return this.phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getAdr() {
-        return this.adr;
-    }
-
-    public void setAdr(String adr) {
-        this.adr = adr;
-    }
 
 
 

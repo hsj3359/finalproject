@@ -68,7 +68,7 @@
         <p>↓키는 단어 추가</p>
         <div class="card" sytle="width:100%;">
           <div class="card-header">
-            <input style="float:left;" type="file"><button style="float: right">만들기</button>
+            <input id="fileinput" accept=".csv" style="float:left;" type="file"><button onclick="fileBuild()" style="float: right">만들기</button>
           </div>
           <div id='word'>
             <table id="wordTable" onkeydown="makeTable()"  >
@@ -105,32 +105,36 @@
                 document.getElementById(num).focus();
                 num+=1;
               }
+              function fileBuild() {
+                var file = document.getElementById("fileinput").value;
+                console.log(file);
 
-               function makeTable(){
-                 var currentCell = document.getElementById(num-1);
-                 if (window.event.keyCode == 13){
-                   if(currentCell.value!='')makeCell(currentCell);
-                   else window.alert("칸이 비어있습니다.");
-                 }
-                 else if(window.event.keyCode == 40){
-                   var currentCell = document.getElementById(num-1);
-                   if(currentCell.value!='') makeCell(currentCell);
-                   if(tampArray.length > 1){
-                     total.push(tampArray);
-                     tampArray = new Array();
-                     //삭제
-                     row.removeChild(cell);
-                     row = table.insertRow();
-                     cell = row.insertCell();
-                     cell.innerHTML = "<input type='text' id="+num+">";
-                     document.getElementById(num).focus();
-                     num += 1;
-                   }
-                   else{
-                     window.alert("입력이 잘못되었습니다.");
-                   }
+              }
+              function makeTable(){
+                var currentCell = document.getElementById(num-1);
+                if (window.event.keyCode == 13){
+                  if(currentCell.value!='')makeCell(currentCell);
+                  else window.alert("칸이 비어있습니다.");
+                }
+                else if(window.event.keyCode == 40){
+                  var currentCell = document.getElementById(num-1);
+                  if(currentCell.value!='') makeCell(currentCell);
+                  if(tampArray.length > 1){
+                    total.push(tampArray);
+                    tampArray = new Array();
+                    //삭제
+                    row.removeChild(cell);
+                    row = table.insertRow();
+                    cell = row.insertCell();
+                    cell.innerHTML = "<input type='text' id="+num+">";
+                    document.getElementById(num).focus();
+                    num += 1;
+                  }
+                  else{
+                    window.alert("입력이 잘못되었습니다.");
+                  }
 
-                 }
+                }
               }
             </script>
           </div>
