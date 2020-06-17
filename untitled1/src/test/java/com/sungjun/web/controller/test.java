@@ -17,12 +17,15 @@ public class test {
     String word = "word";
     String mean = "단어";
     private static UserDao userDao;
-
+    private static TableDao tableDao;
     @BeforeAll
     public static void setup(){
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(DaoFactory.class);
         userDao = applicationContext.getBean("userDao",UserDao.class);
+        ApplicationContext applicationContext1 = new AnnotationConfigApplicationContext(DaoFactory.class);
+        tableDao = applicationContext.getBean("tableDao",TableDao.class);
     }
+
     @Test
     public void get() throws SQLException, ClassNotFoundException {
         User user = userDao.get(id);
@@ -70,15 +73,15 @@ public class test {
     public void makeTable() throws SQLException, ClassNotFoundException {
         MakeTime makeTime = new MakeTime();
         String mTime = makeTime.getTime();
-        userDao.createTable(mTime);
+        tableDao.createTable(mTime);
     }
     @Test
     public void deleteTable() throws SQLException, ClassNotFoundException {
-        String tableName = "wordbook1";
-        userDao.deleteTable(tableName);
+        String tableName = "wordbook20200617144344";
+        tableDao.deleteTable(tableName);
     }
     @Test
     public void getTable() throws SQLException {
-        userDao.getTable();
+        tableDao.getTable();
     }
 }
