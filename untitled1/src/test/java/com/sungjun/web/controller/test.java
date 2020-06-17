@@ -1,5 +1,6 @@
 package com.sungjun.web.controller;
 
+import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
@@ -24,10 +25,8 @@ public class test {
     }
     @Test
     public void get() throws SQLException, ClassNotFoundException {
-        System.out.println("테스트에요");
         User user = userDao.get(id);
         assertThat(user.getId(), is(id));
-        System.out.println("됐음");
     }
 
     @Test
@@ -35,25 +34,51 @@ public class test {
         User user = new User();
         user.setMean(mean);
         user.setWord(word);
-
-
         userDao.insert(user);
         assertThat(user.getId(),greaterThan(0));
-
         User insertedUser = userDao.get(user.getId());
         assertThat(insertedUser.getWord(),is(word));
         assertThat(insertedUser.getMean(), is(mean));
     }
+
+    @Test
+    public void update() throws SQLException, ClassNotFoundException {
+        User user = new User();
+        user.setMean(mean);
+        user.setWord(word);
+        userDao.insert(user);
+        String updatedMean = "일하다";
+        String updatedWord = "work";
+        user.setWord(updatedWord);
+        user.setMean(updatedMean);
+        userDao.update(user);
+        User updatedUser = userDao.get(user.getId());
+        assertThat(updatedUser.getWord(), is(updatedWord));
+        assertThat(updatedUser.getMean(), is(updatedMean));
+    }
+    @Test
+    public void delete() throws SQLException, ClassNotFoundException {
+        User user = new User();
+        user.setMean(mean);
+        user.setWord(word);
+        userDao.insert(user);
+        userDao.delete(user.getId());
+        User deletedUser = userDao.get(user.getId());
+        assertThat(deletedUser, IsNull.nullValue());
+    }
     @Test
     public void makeTable() throws SQLException, ClassNotFoundException {
-        userDao.createTable();
-
+        MakeTime makeTime = new MakeTime();
+        String mTime = makeTime.getTime();
+        userDao.createTable(mTime);
     }
     @Test
     public void deleteTable() throws SQLException, ClassNotFoundException {
-        String tableName = "wordbook";
+        String tableName = "wordbook1";
         userDao.deleteTable(tableName);
-
     }
-
+    @Test
+    public void getTable() throws SQLException {
+        userDao.getTable();
+    }
 }
