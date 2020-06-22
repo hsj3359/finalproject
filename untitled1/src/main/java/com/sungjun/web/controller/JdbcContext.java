@@ -2,6 +2,8 @@ package com.sungjun.web.controller;
 
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JdbcContext {
     private final DataSource dataSource;
@@ -15,7 +17,6 @@ public class JdbcContext {
         PreparedStatement preparedStatement = null;
         try {
             connection = dataSource.getConnection();
-
             preparedStatement = statementStrategy.makeStatement(connection);
             preparedStatement.executeUpdate();
 
@@ -98,16 +99,18 @@ public class JdbcContext {
         return user;
     }
 
-    void jdbcContextForTable() throws SQLException {
+    List<String> jdbcContextForTable() throws SQLException {
         Connection connection = null;
         ResultSet rs = null;
+        List<String> tableList = new ArrayList<>();
         try {
             connection = dataSource.getConnection();
             DatabaseMetaData dbmd = (DatabaseMetaData) connection.getMetaData();
             String[] types = {"TABLE"};
+
             rs = dbmd.getTables("final", null, "%", types);
             while (rs.next()) {
-                System.out.println(rs.getString("TABLE_NAME"));
+                tableList.add(rs.getString("TABLE_NAME"));
             }
         } finally {
             try {
@@ -121,6 +124,7 @@ public class JdbcContext {
                 throwables.printStackTrace();
             }
         }
+        return tableList;
     }
 
     User get(Object[] params, String sql) throws SQLException {

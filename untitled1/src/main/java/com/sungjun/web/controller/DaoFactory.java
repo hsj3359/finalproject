@@ -20,19 +20,21 @@ public class DaoFactory {
     @Value("${db.password}")
     String password;
 
-
     @Bean
     public UserDao userDao() {
         return new UserDao(jdbcTemplate());
     }
+
     @Bean
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
     }
+
     @Bean
     public JdbcContext jdbcContext() {
         return new JdbcContext(dataSource());
     }
+
     @Bean
     public TableDao tableDao() {
         return new TableDao(jdbcContext());
@@ -41,13 +43,11 @@ public class DaoFactory {
     @Bean
     public DataSource dataSource(){
         SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
-
         try {
             dataSource.setDriverClass((Class<? extends Driver>) Class.forName(className));
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-
         dataSource.setUrl(url);
         dataSource.setUsername(username);
         dataSource.setPassword(password);

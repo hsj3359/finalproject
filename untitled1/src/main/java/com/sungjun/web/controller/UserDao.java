@@ -3,7 +3,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+
 import java.sql.*;
+import java.util.List;
+import java.util.Map;
 
 public class UserDao {
     private final JdbcTemplate jdbcTemplate;
@@ -11,9 +14,17 @@ public class UserDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    public int getRow(String tableName){
+        String sql ="select count(*) from "+tableName;
+        int rowCount =  jdbcTemplate.queryForObject(sql, Integer.class);
+        return rowCount;
+    }
+
     public User get(Integer id) throws ClassNotFoundException, SQLException {
         Object[] params = new Object[] {id};
         String sql = "select * from wordbook1 where id = ?";
+
+
         return jdbcTemplate.query(sql, params,rs->{
             User user = null;
             if(rs.next()){
