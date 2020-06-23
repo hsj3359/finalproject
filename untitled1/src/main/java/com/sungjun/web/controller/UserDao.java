@@ -20,11 +20,9 @@ public class UserDao {
         return rowCount;
     }
 
-    public User get(Integer id) throws ClassNotFoundException, SQLException {
+    public User get(Integer id, String tableName) throws ClassNotFoundException, SQLException {
         Object[] params = new Object[] {id};
-        String sql = "select * from wordbook1 where id = ?";
-
-
+        String sql = "select * from "+tableName+" where id = ?";
         return jdbcTemplate.query(sql, params,rs->{
             User user = null;
             if(rs.next()){
@@ -36,18 +34,17 @@ public class UserDao {
             return user;
         });
     }
-    public void insert(User user) throws ClassNotFoundException, SQLException {
-        Object[] params = new Object[] {user.getWord(),user.getMean()};
-        String sql = "INSERT INTO wordbook1 (word,mean) VALUES (?,?);";
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(con->{
-            PreparedStatement preparedStatement = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            for(int i=0; i< params.length; i++){
-                preparedStatement.setObject(i+1, params[i]);
+    public void insert(User user,String tableName) throws ClassNotFoundException, SQLException {
+        Object[] params = new Object[] {user.getId(), user.getWord(),user.getMean()};
+        String sql = "insert into "+ tableName +" values (?, ?, ?);";
+        System.out.println(sql);
+        jdbcTemplate.update(con -> {
+            PreparedStatement preparedStatement = con.prepareStatement(sql);
+            for (int i = 0; i < params.length; i++) {
+                preparedStatement.setObject(i + 1, params[i]);
             }
             return preparedStatement;
-        }, keyHolder);
-        user.setId(keyHolder.getKey().intValue());
+        });
     }
     public void update(User user) throws SQLException {
         Object [] params = new Object[]{user.getWord(),user.getMean(),user.getId()};

@@ -2,7 +2,6 @@ package com.sungjun.web.controller;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.http.converter.json.JsonbHttpMessageConverter;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
@@ -16,7 +15,6 @@ public class SimpleController implements Controller {
     private final UserDao userDao;
     private final TableDao tableDao;
 
-
     public SimpleController(UserDao userDao, TableDao tableDao) {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext("com.sungjun.web.controller");
         userDao = applicationContext.getBean("userDao",UserDao.class);
@@ -24,25 +22,62 @@ public class SimpleController implements Controller {
         this.userDao = userDao;
         this.tableDao = tableDao;
     }
-    @PostMapping(value="/requestObject")
+
+    @PostMapping(value = "/createTable")
     @ResponseBody
-    public List<Map<String, Object>> simpleWithObject(@RequestBody String tableName) throws SQLException, ClassNotFoundException {
-        tableName = tableName.replace("=","");
-        int row = userDao.getRow(tableName);
-        List<Map<String,Object>> list = new ArrayList<Map<String, Object >>();
-        for(int i=1; i<row+1; i++){
-            User user = userDao.get(i);
-            Map<String, Object> tamp = new HashMap<String,Object>();
-            tamp.put("word",user.getWord());
-            tamp.put("mean",user.getMean());
-            System.out.println(tamp);
-            list.add(tamp);
+    public boolean CreateName(@RequestBody String tableName) throws SQLException, ClassNotFoundException {
+        String name = tableName.replace("=","");
+        List<String> tableList = tableDao.getTableList();
+        for(int i=0; i<tableList.size(); i++){
+            if(tableList.get(i)==name)return false;
         }
-        for(int i=0; i<list.size(); i++){
-            System.out.println(list.get(1));
-        }
-        return list;
+        tableDao.createTable(name);
+        return true;
     }
+
+    @PostMapping(value = "/createData")
+    @ResponseBody
+    public void CreateData(@RequestBody Map<String, Object[]> data) throws SQLException, ClassNotFoundException {
+        System.out.println("come");
+        System.out.println("1"+data.get("table")[0]);
+        System.out.println("2"+data.get("data")[0]);
+        System.out.println("2"+data.get("data")[1]);
+        System.out.println("2"+data.get("data")[2]);
+        User user = new User();
+        user.setId((Integer) data.get("data")[0]);
+        user.setWord((String) data.get("data")[1]);
+        user.setMean((String) data.get("data")[2]);
+        userDao.insert(user,(String)data.get("table")[0]);
+        return;
+    }
+
+    @PostMapping(value="/deleteTable")
+    @ResponseBody
+    public void deleteTable(@RequestBody String tableName) throws SQLException, ClassNotFoundException {
+        tableName = tableName.replace("=","");
+        tableDao.deleteTable(tableName);
+        return ;
+    }
+
+    @PostMapping(value="/sendData")
+    @ResponseBody
+    public List<Map<String, Object>> sendTableData(@RequestBody String tableName) throws SQLException, ClassNotFoundException {
+        tableName = tableName.replace("=","");
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        int row = userDao.getRow(tableName)+1;
+        for(int i=1; i<row; i++){
+            User user = userDao.get(i,tableName);
+            Map<String, Object> tampMap = new HashMap<>();
+            tampMap.put("word",user.getWord());
+            tampMap.put("mean",user.getMean());
+            dataList.add(tampMap);
+            System.out.println(tampMap);
+        }
+        System.out.println(dataList);
+        return dataList;
+    }
+
+
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
         ModelAndView modelAndView = new ModelAndView("user");
