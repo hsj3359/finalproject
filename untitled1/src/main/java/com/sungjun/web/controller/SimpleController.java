@@ -35,6 +35,26 @@ public class SimpleController implements Controller {
         return true;
     }
 
+    @PostMapping(value = "/updateData")
+    @ResponseBody
+    public void updateData(@RequestBody Map<String, Object[]> data) throws SQLException, ClassNotFoundException {
+        User user = new User();
+        user.setId((Integer) data.get("data")[0]);
+        user.setWord((String) data.get("data")[1]);
+        user.setMean((String) data.get("data")[2]);
+        userDao.update(user,(String)data.get("table")[0]);
+        return;
+    }
+
+    @PostMapping(value = "/deleteData")
+    @ResponseBody
+    public void deleteData(@RequestBody Integer id) throws SQLException, ClassNotFoundException {
+        User user = new User();
+        user.setId(id);
+        userDao.delete(user.getId());
+        return;
+    }
+
     @PostMapping(value = "/createData")
     @ResponseBody
     public void CreateData(@RequestBody Map<String, Object[]> data) throws SQLException, ClassNotFoundException {

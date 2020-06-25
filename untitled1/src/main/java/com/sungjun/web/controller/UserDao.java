@@ -46,9 +46,9 @@ public class UserDao {
             return preparedStatement;
         });
     }
-    public void update(User user) throws SQLException {
+    public void update(User user, String tableName) throws SQLException {
         Object [] params = new Object[]{user.getWord(),user.getMean(),user.getId()};
-        String sql = "update wordbook1 set word=?, mean=? where id=? ";
+        String sql = "update "+tableName+" set word=?, mean=? where id=? ";
         jdbcTemplate.update(sql,params);
     }
     public void delete(Integer id) throws SQLException {

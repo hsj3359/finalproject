@@ -33,7 +33,15 @@
   <!-- Core theme CSS (includes Bootstrap)-->
   <link href="<%=request.getContextPath() %>/resources/css/styles.css" rel="stylesheet" />
   <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
-
+    <style>
+        #buttonList{
+            width: 150px;
+            height: 100px;
+            left: 200px;
+            top: 200px;
+            position: absolute;
+        }
+    </style>
 </head>
 <body id="page-top" onload="makeList(), tableBuild()">
 <!-- Navigation-->
@@ -76,7 +84,6 @@
         <p>한 줄을 완성시켜야 데이터가 입력됩니다.</p>
         <div class="card" sytle="width:100%;">
           <div class="card-header">
-
             <select id="tableName" style="float:left;">
 
             </select>
@@ -101,16 +108,15 @@
               </tr>
 
             </table>
-
             <button style="float: right" class="mt-3" onclick="makeData()">테이블 생성하기</button>
+            <button style="float:left;" onclick="downloadCSV();">csv파일 만들기</button>
             <script>
                 const reader = new FileReader()
-
                 const select = document.getElementById("tableName");
                 const table = document.getElementById('wordTable');
                 const tableNameInput = document.getElementById("DatatableName");
+                const $buttonList = document.getElementById('buttonList');
                 var row, cell = null;
-
 
                 var totalArray = new Array();
                 var rowArray = new Array();
@@ -135,6 +141,15 @@
 
                     rowArray = new Array();
                     makeFileTable();
+                }
+                function getId(array) {
+                  var id =0;
+                  for(var i=0; i<totalArray.length; i++){
+                    for(var j=1; j<totalArray[i].length;j++){
+                      id +=1;
+                      if(array[0]==""+i&&array[1]==""+j)return id;
+                    }
+                  }
                 }
 
                 function reset() {
@@ -283,21 +298,10 @@
                     }
                 }
 
-
-
-
-
                 function makeModal() {
                     var modalName = tableNameInput.value + "와 같은 테이블이 존재합니다."
                     var modalLable = document.getElementById("myModalLabel");
                     modalLable.innerHTML = modalName;
-                    var clientData = document.getElementById("client");
-                    var text = "";
-                    for (var i = 0; i < totalArray.length; i++) {
-                        text += totalArray[i];
-                        text += "<br>";
-                    }
-                    clientData.innerHTML = text;
                     var tableData = new Array();
                     var data = tableNameInput.value;
                     $.ajax({
@@ -326,12 +330,32 @@
                                     tampArray.push(data[i].mean);
                                 }
                             }
+                            tableData.push(tampArray);
                             console.log(tableData);
+                            var saveDataDiv = document.getElementById("saveData");
+                            var text ="";
+                            for(var i=0; i<tableData.length; i++){
+                                for(var j=0; j<tableData[i].length; j++){
+                                    text += tableData[i][j]+",";
+                                }
+                                text += "<br>";
+                            }
+                            saveDataDiv.innerHTML = text;
                         },
                         error: function () {
                             alert("error sendData");
                         }
                     });
+
+                    var currentDataDiv = document.getElementById("currentData");
+                    var text ="";
+                    for(var i=0; i<totalArray.length; i++){
+                        for(var j=0; j<totalArray[i].length; j++){
+                            text += totalArray[i][j]+",";
+                        }
+                        text += "<br>";
+                    }
+                    currentDataDiv.innerHTML = text;
 
                 }
                 function dataBuild() {
@@ -446,6 +470,7 @@
                         $('#textArea').append(a+b+c+d);
                     }
                     else{
+                        wrongAray.push(ranmdomAry[count]);
                         if(Anum==0){
                             var c= totalArray[ranmdomAry[count]][0]+"<br>"
                             var c_1= totalArray[ranmdomAry[count]][1];
@@ -506,11 +531,31 @@
                                 viewWord.innerHTML = "문제를 모두 푸셨습니다.<br> 다시하고 싶으시면 엔터키를 눌러주세요";
                                 count=0;
                                 first = true;
+                                wrongAray = new Array();
                                 return;
                             }
                         }
                         writeWord();
                     }
+                }
+
+                function downloadCSV(){
+                  var a = "\uFEFF ";
+                  for(var i=0; i<totalArray.length; i++){
+                    for(var j=0; j<totalArray[i].length; j++){
+                      if(j==totalArray[i].length-1) a+= totalArray[i][j]+ "\r\n";
+                      else a += totalArray[i][j] + ",";
+                    }
+                  }
+                  console.log(a);
+                  var downloadLink = document.createElement("a");
+                  var blob = new Blob([a], { type: "text/csv; charset=utf-8" });
+                  var url = URL.createObjectURL(blob);
+                  downloadLink.href = url;
+                  downloadLink.download = tableNameInput.value+".csv";
+                  document.body.appendChild(downloadLink);
+                  downloadLink.click();
+                  document.body.removeChild(downloadLink);
                 }
             </script>
           </div>
@@ -540,8 +585,6 @@
     <div >
       <div id="textArea" style="display: flex; flex-flow: wrap;">
       </div>
-        <button>csv파일 만들기</button>
-        <button>데이터 파일 만들기</button>
     </div>
   </div>
 </section>
@@ -560,20 +603,15 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
             </div>
             <div class="modal-body">
-              <h1>저장된 내용</h1>
-                <div id ="dataBase">
-
-                </div>
+                <h1>저장된 데이터</h1>
+                <div id ="saveData"></div>
                 <hr width="100%">
-              <h1>변경할 내용</h1>
-                <div id ="client">
-
-                </div>
+                <h1>현재 테이블 데이터</h1>
+                <div id ="currentData"></div>
             </div>
             <div class="modal-footer">
-              <p style="float:left;">원하시는 버튼을 클릭해주세요</p>
-                <button type="button" onclick="changeTable()">업데이트</button>
-                <button type="button" onclick="changeTable()">테이블 교체</button>
+              <p style="float:left;">테이블을 교체하시겠습니까?</p>
+                <button type="button" onclick="changeTable()">확인</button>
                 <button type="button" data-dismiss="modal">취소</button>
             </div>
         </div>
