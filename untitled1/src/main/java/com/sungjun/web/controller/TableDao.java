@@ -15,7 +15,7 @@ public class TableDao {
     public void createTable(String tableName) throws SQLException, ClassNotFoundException {
         String sql = "CREATE TABLE " + tableName + " ( \n" +
                 "id INT PRIMARY KEY AUTO_INCREMENT, \n" +
-                "word VARCHAR(12), \n" +
+                "word VARCHAR(20), \n" +
                 "mean VARCHAR(80) \n" +
                 ") ENGINE=INNODB; ";
         TableDao.jdbcContext.table(sql);
@@ -34,9 +34,6 @@ public class TableDao {
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.next();
-//        while (resultSet.next()){
-//            System.out.println(resultSet.);
-//        }
         resultSet.close();
         preparedStatement.close();
         connection.close();
@@ -44,7 +41,6 @@ public class TableDao {
     }
     public List<String> getTableList() throws SQLException {
         List<String> tableList = TableDao.jdbcContext.jdbcContextForTable();
-
         return tableList;
     }
 }

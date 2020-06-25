@@ -38,11 +38,6 @@ public class SimpleController implements Controller {
     @PostMapping(value = "/createData")
     @ResponseBody
     public void CreateData(@RequestBody Map<String, Object[]> data) throws SQLException, ClassNotFoundException {
-        System.out.println("come");
-        System.out.println("1"+data.get("table")[0]);
-        System.out.println("2"+data.get("data")[0]);
-        System.out.println("2"+data.get("data")[1]);
-        System.out.println("2"+data.get("data")[2]);
         User user = new User();
         user.setId((Integer) data.get("data")[0]);
         user.setWord((String) data.get("data")[1]);
@@ -54,7 +49,7 @@ public class SimpleController implements Controller {
     @PostMapping(value="/deleteTable")
     @ResponseBody
     public void deleteTable(@RequestBody String tableName) throws SQLException, ClassNotFoundException {
-        tableName = tableName.replace("=","");
+        tableName = tableName.replace("=","").replace("+","");
         tableDao.deleteTable(tableName);
         return ;
     }
@@ -71,9 +66,8 @@ public class SimpleController implements Controller {
             tampMap.put("word",user.getWord());
             tampMap.put("mean",user.getMean());
             dataList.add(tampMap);
-            System.out.println(tampMap);
+
         }
-        System.out.println(dataList);
         return dataList;
     }
 

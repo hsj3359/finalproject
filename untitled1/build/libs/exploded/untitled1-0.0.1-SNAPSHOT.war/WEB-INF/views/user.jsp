@@ -35,7 +35,7 @@
   <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
 
 </head>
-<body id="page-top" onload="makeList()">
+<body id="page-top" onload="makeList(), tableBuild()">
 <!-- Navigation-->
 <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="mainNav">
   <div class="container">
@@ -73,13 +73,16 @@
         <p>엔터키는 뜻 추가</p>
         <p>↓키는 단어 추가</p>
         <p>현재 입력중인 칸은 데이터에 입력되지 않습니다.</p>
-        <p>한줄에는 단어와 뜻이 필수적으로 필요합니다.</p>
+        <p>한 줄을 완성시켜야 데이터가 입력됩니다.</p>
         <div class="card" sytle="width:100%;">
           <div class="card-header">
-            <select id="tableName" style="float:left;"></select>
-            <button onclick="dataBuild()" style="float: right">가져오기</button>
-              <button onclick="deleteData()" style="float: right">삭제하기</button>
-            <%--            <input id="fileinput" accept=".csv" style="float:left;" type="file"><button onclick="fileBuild()" style="float: right">만들기</button>--%>
+
+            <select id="tableName" style="float:left;">
+
+            </select>
+              <button onclick="reset()" style="float: right">초기화</button>
+              <button onclick="dataBuild()" style="float: right">가져오기</button>
+              <button onclick="deleteTable()" style="float: right">삭제하기</button>
           </div>
           <div class="card-header">
             <input id="fileinput" accept=".csv" style="float:left;" type="file" onchange="fileBuild(this)">
@@ -91,7 +94,7 @@
               </div>
               <input id="DatatableName" style="width: 80%">
             </div>
-            <table id="wordTable" onkeydown="makeTable()">
+            <table id="wordTable">
               <tr>
                 <td>단어</td>
                 <td colspan="99">뜻</td>
@@ -101,245 +104,414 @@
 
             <button style="float: right" class="mt-3" onclick="makeData()">테이블 생성하기</button>
             <script>
-              var row,cell = null;
-              var totalArray = new Array();
-              var rowArray = new Array();
-              const reader = new FileReader()
-              var tableListArray = new Array();
-              function makeList() {
-                var list = "${tableList}".replace("[","").replace("]","");
-                tableListArray = list.split(",");
-                var select = document.getElementById("tableName");
-                var html = "<option value=''>단어장 선택</option>";
-                for(var i=0; i<tableListArray.length; i++){
-                  html += "<option value='"+tableListArray[i]+"'>"+tableListArray[i]+"</option>"
-                }
-                select.innerHTML = html;
-              }
-              function tableBuild() {
-                var table = document.getElementById('wordTable');
-                row = table.insertRow();
-                cell = row.insertCell();
-                cell.innerHTML = "<input type='text' id=0-0>";
-              }
-              tableBuild();
-              function fileBuild(sender) {
-                  var name = sender.value;
-                  name = name.replace("C:\\fakepath\\","").replace(".csv","");
-                  const csv = sender.files[0]
-                  reader.readAsText(csv)
-                  document.getElementById("DatatableName").value = name;
-              }
-              function replaceAll(str, searchStr, replaceStr) {
-                  return str.split(searchStr).join(replaceStr);
-              }
-              reader.onload = function (e) {
-                  var re =/\r?\n|\r/;
-                  data = e.target.result;
-                  data = replaceAll(data,re,"^");
-                  var tampArray = data.split("^");
-                  for(var i =0; i< tampArray.length-1; i++){
-                      rowArray = tampArray[i].split(",");
-                      totalArray.push(rowArray);
-                  }
-                  console.log(totalArray);
-                  rowArray = new Array();
-                  makeFileTable();
-              }
-              function makeFileTable() {
-                var table = document.getElementById('wordTable');
-                  for(var i=0; i<totalArray.length; i++){
-                    console.log(i);
-                    for(var j=0; j<totalArray[i].length; j++){
-                      if(totalArray[i][j]!=""){
-                        var currentInput = document.getElementById(i+"-"+j);
-                        console.log(totalArray[i][j])
-                        currentInput.value =totalArray[i][j] ;
-                        currentInput.disabled = true;
-                        if(j!= totalArray[i].lenth-1){
-                          cell = row.insertCell();
-                          cell.innerHTML = "<input type='text' id="+i+"-"+(j+1)+">";
-                        }
-                      }
+                const reader = new FileReader()
+
+                const select = document.getElementById("tableName");
+                const table = document.getElementById('wordTable');
+                const tableNameInput = document.getElementById("DatatableName");
+                var row, cell = null;
+
+
+                var totalArray = new Array();
+                var rowArray = new Array();
+                var tableListArray = new Array();
+                var ranmdomAry = new Array;
+                var wrongAray = new Array;
+
+                var count =0;
+                var Anum =0;
+
+                var first = true;
+
+                reader.onload = function (e) {
+                    var re = /\r?\n|\r/;
+                    var data = e.target.result;
+                    data = replaceAll(data, re, "^");
+                    var tampArray = data.split("^");
+                    for (var i = 0; i < tampArray.length - 1; i++) {
+                        rowArray = tampArray[i].split(",");
+                        totalArray.push(rowArray);
                     }
-                    row.removeChild(cell);
+
+                    rowArray = new Array();
+                    makeFileTable();
+                }
+
+                function reset() {
+                    for (var i = 0; i < totalArray.length+1; i++) {
+                        table.deleteRow(1);
+                    }
+                    totalArray = new Array();
+                    rowArray = new Array();
+                    tableBuild();
+
+                }
+                function makeList() {
+                    var list = "${tableList}".replace(" ", "").replace("[", "").replace("]", "");
+                    tableListArray = list.split(",");
+                    var html = "<option value=''>단어장 선택</option>";
+                    for (var i = 0; i < tableListArray.length; i++) {
+                        html += "<option id='"+tableListArray[i].replace(" ", "")+"' value='" + tableListArray[i].replace(" ", "") + "'>" + tableListArray[i] + "</option>"
+                    }
+                    select.innerHTML = html;
+                }
+                function tableBuild() {
                     row = table.insertRow();
+                    makeCell(0,0);
+                    tableNameInput.focus();
+                }
+
+                function fileBuild(sender) {
+                    var name = sender.value;
+                    name = name.replace("C:\\fakepath\\", "").replace(".csv", "");
+                    const csv = sender.files[0]
+                    reader.readAsText(csv)
+                    tableNameInput.value = name;
+                }
+
+                function replaceAll(str, searchStr, replaceStr) {
+                    return str.split(searchStr).join(replaceStr);
+                }
+
+                function makeCell(i,j) {
                     cell = row.insertCell();
-                    cell.innerHTML = "<input type='text' id="+(i+1)+"-0>";
-                  }
-              }
-              function deleteData() {
-                var data = document.getElementById("tableName").value;
-                $.ajax({
-                  url: "deleteTable",
-                  type: "POST",
-                  data: data,
-                  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                  success: function(data){
-                    alert("테이블을 삭제하였습니다.");
-                  },
-                  error: function(){
-                    alert("error deleteTable");
-                  }
-                });
-              }
+                    cell.innerHTML = "<input onkeydown='makeTable()' type='text' id=" +i + "-" + j + ">";
+                    var input =document.getElementById(i + "-" + j)
+                    input.focus();
+                }
 
-              function makeTable() {
-                var currentInput = document.getElementById(totalArray.length+"-"+rowArray.length);
-                if (window.event.keyCode == 13)makeCell(currentInput);
-                else if(window.event.keyCode == 40){
-                  var cellData = currentInput.value;
-                  if(cellData!=""){
-                    if(rowArray.length>=1){
-                      makeCell(currentInput)
-                      row.removeChild(cell);
-                      makeRow();
+                function makeFileTable() {
+                    for (var i = 0; i < totalArray.length; i++) {
+                        for (var j = 0; j < totalArray[i].length; j++) {
+                            if (totalArray[i][j] != "") {
+                                var currentInput = document.getElementById(i + "-" + j);
+                                currentInput.value = totalArray[i][j];
+                                currentInput.disabled = true;
+                                makeCell(i,(j+1));
+                            }
+                        }
+                        row.removeChild(cell);
+                        row = table.insertRow();
+                        makeCell((i+1),0);
                     }
-                    else alert("입력이 잘못되었습니다.")
-                  }
-                  else{
-                    if(rowArray.length>1){
-                      row.removeChild(cell);
-                      makeRow();
+                }
+
+                function makeTable(i,j) {
+                    var currentInput = document.getElementById(totalArray.length + "-" + rowArray.length);
+                    var inputData = currentInput.value;
+                    if (window.event.keyCode == 13){
+                        if(inputData!=""){
+                            currentInput.disabled = true;
+                            rowArray.push(inputData);
+                            makeCell(totalArray.length, rowArray.length)
+                        }
                     }
-                    else alert("입력이 잘못되었습니다.")
-                  }
-                }
-              }
-              function makeCell(input) {
-                var cellData = input.value;
-                if(cellData !=""){
-                  input.disabled = true;
-                  rowArray.push(cellData);
-                  cell = row.insertCell();
-                  cell.innerHTML = "<input type='text' id="+totalArray.length+"-"+rowArray.length+">";
-                  document.getElementById(totalArray.length+"-"+rowArray.length).focus();
-                }
-                else{
-                  alert("입력이 잘못되었습니다.")
+                    else if (window.event.keyCode == 40) {
+                        if (inputData != "") {
+                            if (rowArray.length >= 1) {
+                                currentInput.disabled = true;
+                                rowArray.push(inputData);
+                                totalArray.push(rowArray);
+                                rowArray = new Array();
+                                row = table.insertRow();
+                                makeCell(totalArray.length,rowArray.length);
+                            }
+                            else alert("입력이 잘못되었습니다.")
+                        }
+                        else {
+                            if (rowArray.length > 1) {
+                                row.removeChild(cell);
+                                totalArray.push(rowArray);
+                                rowArray = new Array();
+                                row = table.insertRow();
+                                makeCell(totalArray.length,rowArray.length);
+                            }
+                            else alert("입력이 잘못되었습니다.")
+                        }
+                    }
                 }
 
-              }
-              function makeRow() {
-                totalArray.push(rowArray);
-                rowArray = new Array();
-                var table = document.getElementById('wordTable');
-                row = table.insertRow();
-                cell = row.insertCell();
-                cell.innerHTML = "<input type='text' id="+totalArray.length+"-"+rowArray.length+">";
-                document.getElementById(totalArray.length+"-"+rowArray.length).focus();
-              }
-
-              function CleanTable() {
-                var currentInput = document.getElementById(totalArray.length+"-"+rowArray.length);
-                console.log(currentInput);
-                if (currentInput.value !="")makeCell(currentInput);
-                if(rowArray.length>1)totalArray.push(rowArray);
-              }
-
-              function createJson() {
-                  var data = document.getElementById("DatatableName").value;
-                var tampJson =null;
-                var id=1;
-                for(var i=0; i<totalArray.length; i++){
-                  for(var j=1; j<totalArray[i].length; j++){
-                    if(totalArray[i][j]!=""){
-                      var tampData = [id,totalArray[i][0],totalArray[i][j]]
-                      tampJson = JSON.stringify({
-                        "table" : [data],
-                        "data" : tampData
-                      })
-                      id +=1;
-                      $.ajax({
-                        url: "createData",
+                function changeTable() {
+                    $('#myModal').modal("hide");
+                    deleteTable();
+                    var data = tableNameInput.value;
+                    $.ajax({
+                        url: "createTable",
                         type: "POST",
-                        data: tampJson,
-                        contentType : "application/json; charset=UTF-8",
-                        success: function(data){
-
+                        data: data,
+                        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                        success: function (data) {
+                            if (data) {
+                                createJson();
+                                alert("데이터 베이스에 테이블을 생성하였습니다.");
+                                tableListArray.push(tableNameInput.value);
+                                var html = "<option id='"+tableNameInput.value+"' value='" + tableNameInput.value + "'>" + tableNameInput.value + "</option>"
+                                select.innerHTML += html;
+                            }
+                            else alert("같은 이름의 테이블이 이미 존재합니다.");
                         },
-                        error: function(){
-                          alert("error createData");
+                        error: function () {
+                            alert("error createTable");
                         }
-                      });
+                    });
+                }
+                function createJson() {
+                    var data = tableNameInput.value;
+                    var tampJson = null;
+                    var id = 1;
+                    for (var i = 0; i < totalArray.length; i++) {
+                        for (var j = 1; j < totalArray[i].length; j++) {
+                            if (totalArray[i][j] != "") {
+                                var tampData = [id, totalArray[i][0], totalArray[i][j]]
+                                tampJson = JSON.stringify({
+                                    "table": [data],
+                                    "data": tampData
+                                })
+                                id += 1;
+                                $.ajax({
+                                    url: "createData",
+                                    type: "POST",
+                                    data: tampJson,
+                                    contentType: "application/json; charset=UTF-8",
+                                    success: function (data) {
+                                    },
+                                    error: function () {
+                                    }
+                                });
+                            }
+                        }
                     }
-                  }
                 }
 
-              }
-              function makeModal() {
-                var clientData = document.getElementById("client");
-                var text = "";
-                for(var i=0; i<totalArray.length; i++){
-                    text+= totalArray[i];
-                    text +="<br>";
-                }
-                clientData.innerHTML = text;
-                var name = document.getElementById("DatatableName").value;
-                var tableData = new Array();
-                $.ajax({
-                  url: "sendData",
-                  type: "POST",
-                  data: name,
-                  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                  success: function(data){
-                    tableData = data;
-                    var databaseData = document.getElementById("dataBase");
-                    text="";
-                    for(var i=0; i<tableData.length; i++){
-                      if(i > 0) {
-                        if(tableData[i].word == tableData[i-1].word){
-                          text += ", "+ tableData[i].mean;
-                        }
-                        else{
-                          text += "<br>"+ tableData[i].word + ","+tableData[i].mean;
-                        }
-                      }
-                      else{
-                        text+= tableData[i].word + ","+tableData[i].mean;
-                      }
-                    }
-                    databaseData.innerHTML = text;
-                  },
-                  error: function(){
-                    alert("error createTable");
-                  }
-                });
 
-              }
-              function makeData() {
-                //html 테이블에 적힌값을 DataBase에 생성
-                CleanTable();
-                var data = document.getElementById("DatatableName").value;
-                for(var i=0; i<tableListArray.length; i++){
-                    if(data == tableListArray[i]){
-                        console.log("같은 테이블이 있스니다.")
-                        $('#myModal').modal('show');
-                        makeModal();
-                        return;
+
+
+
+                function makeModal() {
+                    var modalName = tableNameInput.value + "와 같은 테이블이 존재합니다."
+                    var modalLable = document.getElementById("myModalLabel");
+                    modalLable.innerHTML = modalName;
+                    var clientData = document.getElementById("client");
+                    var text = "";
+                    for (var i = 0; i < totalArray.length; i++) {
+                        text += totalArray[i];
+                        text += "<br>";
                     }
+                    clientData.innerHTML = text;
+                    var tableData = new Array();
+                    var data = tableNameInput.value;
+                    $.ajax({
+                        url: "sendData",
+                        type: "POST",
+                        data: data,
+                        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                        success: function (data) {
+                            var databaseData = document.getElementById("dataBase");
+                            text = "";
+                            var tampArray = new Array();
+                            for (var i = 0; i < data.length; i++) {
+                                if (i > 0) {
+                                    if (data[i].word == data[i - 1].word) {
+                                        tampArray.push(data[i].mean);
+                                    }
+                                    else {
+                                        tableData.push(tampArray);
+                                        tampArray = new Array();
+                                        tampArray.push(data[i].word);
+                                        tampArray.push(data[i].mean);
+                                    }
+                                }
+                                else {
+                                    tampArray.push(data[i].word);
+                                    tampArray.push(data[i].mean);
+                                }
+                            }
+                            console.log(tableData);
+                        },
+                        error: function () {
+                            alert("error sendData");
+                        }
+                    });
+
                 }
-                if(totalArray.length>0){
+                function dataBuild() {
+                  var data = select.value;
+                  tableNameInput.value =data;
                   $.ajax({
-                    url: "createTable",
+                    url: "sendData",
                     type: "POST",
                     data: data,
                     contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                    success: function(data){
-                      if(data){
-                          createJson();
-                          alert("데이터 베이스에 테이블을 생성하였습니다.");
+                    success: function (data) {
+                      for(var i=0; i<data.length; i++){
+                        var word = data[i].word;
+                        var mean = data[i].mean;
+                        if(i==0){
+                          rowArray.push(word);
+                          rowArray.push(mean);
+                        }
+                        else{
+                          if(rowArray[0]==word){
+                            rowArray.push(mean);
+                          }
+                          else{
+                            totalArray.push(rowArray);
+                            rowArray = new Array();
+                            rowArray.push(word);
+                            rowArray.push(mean);
+                          }
+                        }
                       }
-                      else alert("같은 이름의 테이블이 이미 존재합니다.");
+                      totalArray.push(rowArray);
+                      rowArray = new Array();
+                      makeFileTable()
                     },
-                    error: function(){
-                      alert("error createTable");
+                    error: function () {
+                      alert("error sendData");
                     }
                   });
                 }
-                else alert("단어를 한줄이상 작성해주세요");
+                function makeData() {
+                    //html 테이블에 적힌값을 DataBase에 생성
+                    var data = tableNameInput.value;
+                    for (var i = 0; i < tableListArray.length; i++) {
+                        console.log(data);
+                        console.log(tableListArray[i].replace(" ", ""));
+                        if (data == tableListArray[i].replace(" ", "")) {
+                            $('#myModal').modal('show');
+                            makeModal();
+                            return;
+                        }
+                    }
+                    if (totalArray.length > 0) {
+                        $.ajax({
+                            url: "createTable",
+                            type: "POST",
+                            data: data,
+                            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                            success: function (data) {
+                                if (data) {
+                                    createJson();
+                                    alert("데이터 베이스에 테이블을 생성하였습니다.");
+                                }
+                                else alert("같은 이름의 테이블이 이미 존재합니다.");
+                                tableListArray.push(tableNameInput.value);
+                                var html = "<option id='"+tableNameInput.value+"' value='" + tableNameInput.value + "'>" + tableNameInput.value + "</option>"
+                                select.innerHTML += html;
+                            },
+                            error: function () {
+                                alert("error createTable");
+                            }
+                        });
+                    }
+                    else alert("단어를 한줄이상 작성해주세요");
                 }
 
+
+                function deleteTable() {
+                    var tableName = select.value;
+                    $.ajax({
+                        url: "deleteTable",
+                        type: "POST",
+                        data: tableName,
+                        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                        success: function (data) {
+                            alert("테이블을 삭제하였습니다.");
+                            select.removeChild(document.getElementById(tableName))
+                          for(var i=0; i<tableListArray.length;i++){
+                            if(tableName==tableListArray[i])tableListArray.pop(i);
+                          }
+                        },
+                        error: function () {
+                            alert("error deleteTable");
+                        }
+                    });
+                }
+                function writeWord(){
+                   var tampNum = totalArray[ranmdomAry[count]].length;
+                   while(true){
+                       Anum = Math.floor(Math.random() * tampNum);
+                       if(totalArray[ranmdomAry[count]][Anum]!="") break;
+                   }
+                   var viewWord = document.getElementById("viewWord");
+                   viewWord.innerHTML = totalArray[ranmdomAry[count]][Anum];
+                }
+
+                function makeCard(bool) {
+                    var a= "<div class='card'>";
+                    var b= "<div class='card-body' id='word' style='text-align: center'>";
+                    var d= "</div></div>";
+                    if(bool){
+                        var c= "맞았습니다."
+                        $('#textArea').append(a+b+c+d);
+                    }
+                    else{
+                        if(Anum==0){
+                            var c= totalArray[ranmdomAry[count]][0]+"<br>"
+                            var c_1= totalArray[ranmdomAry[count]][1];
+                            $('#textArea').append(a+b+c+c_1+d);
+                        }
+                        else{
+                            var c= totalArray[ranmdomAry[count]][0]+"<br>"
+                            var c_1= totalArray[ranmdomAry[count]][Anum];
+                            $('#textArea').append(a+b+c+c_1+d);
+                        }
+
+                    }
+                }
+                function randomNumber(){
+                    ranmdomAry = new Array;
+                    for(var i=0; i<totalArray.length; i++){
+                        var randNum = Math.floor(Math.random() * totalArray.length);
+                        ranmdomAry[i]=randNum;
+                        for(var j=0; j<ranmdomAry.length-1; j++){
+                            if(ranmdomAry[j]==randNum){
+                                i -= 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+                function enterkey() {
+                    if (window.event.keyCode == 13) {
+                        var inputText = document.getElementById('inputText');
+                        var text = inputText.value;
+                        inputText.value = "";
+                        if(first){
+                            randomNumber();
+                            var textArea = document.getElementById("textArea");
+                            textArea.innerHTML = "";
+                            first=false;
+                        }
+                        else{
+                            if(Anum ==0){
+                                var tampControl = true;
+                                for(var i=1; i<totalArray[ranmdomAry[count]].length; i++){
+                                    if(text==totalArray[ranmdomAry[count]][i]){
+                                        makeCard(true);
+                                        tampControl = false;
+                                        break;
+                                    }
+
+                                }
+                                if(tampControl) makeCard(false);
+                            }
+                            else{
+                                if(text==totalArray[ranmdomAry[count]][0]) makeCard(true);
+                                else makeCard(false);
+                            }
+                            count +=1;
+                            if(count == ranmdomAry.length){
+                                var viewWord = document.getElementById("viewWord");
+                                viewWord.innerHTML = "문제를 모두 푸셨습니다.<br> 다시하고 싶으시면 엔터키를 눌러주세요";
+                                count=0;
+                                first = true;
+                                return;
+                            }
+                        }
+                        writeWord();
+                    }
+                }
             </script>
           </div>
         </div>
@@ -356,7 +528,7 @@
     <hr class="divider my-4" />
     <div>
       <div class="card">
-        <div class="card-body" id="word" style="text-align: center">
+        <div class="card-body" id="viewWord" style="text-align: center">
           시작하시려면 단어를 등록하시고 enter키를 누르세요
         </div>
       </div>
@@ -367,8 +539,9 @@
 
     <div >
       <div id="textArea" style="display: flex; flex-flow: wrap;">
-
       </div>
+        <button>csv파일 만들기</button>
+        <button>데이터 파일 만들기</button>
     </div>
   </div>
 </section>
@@ -383,7 +556,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="myModalLabel">모달 타이틀</h4>
+                <h4 style="color:red;" class="modal-title" id="myModalLabel">모달 타이틀</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
             </div>
             <div class="modal-body">
@@ -398,9 +571,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-              <p style="float:left;">테이블의 내용을 바꾸시겠습니까?</p>
-                <button type="button" class="btn btn-primary">확인</button>
-                <button type="button" class="btn btn-default" data-dismiss="modal">취소</button>
+              <p style="float:left;">원하시는 버튼을 클릭해주세요</p>
+                <button type="button" onclick="changeTable()">업데이트</button>
+                <button type="button" onclick="changeTable()">테이블 교체</button>
+                <button type="button" data-dismiss="modal">취소</button>
             </div>
         </div>
     </div>
