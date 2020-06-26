@@ -51,9 +51,9 @@ public class UserDao {
         String sql = "update "+tableName+" set word=?, mean=? where id=? ";
         jdbcTemplate.update(sql,params);
     }
-    public void delete(Integer id) throws SQLException {
+    public void delete(Integer id, String tableName) throws SQLException {
         Object [] params = new Object[]{id};
-        String sql = "delete from wordbook1 where id=?";
+        String sql = "delete from "+ tableName +" where id=?";
         jdbcTemplate.update(sql, params);
     }
 

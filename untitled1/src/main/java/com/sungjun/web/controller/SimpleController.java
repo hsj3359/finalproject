@@ -48,10 +48,11 @@ public class SimpleController implements Controller {
 
     @PostMapping(value = "/deleteData")
     @ResponseBody
-    public void deleteData(@RequestBody Integer id) throws SQLException, ClassNotFoundException {
+    public void deleteData(@RequestBody Map<String, Object> data) throws SQLException, ClassNotFoundException {
         User user = new User();
-        user.setId(id);
-        userDao.delete(user.getId());
+        Integer id = (Integer) data.get("id");
+        user.setId((Integer) data.get("id"));
+        userDao.delete(user.getId(),(String)data.get("table"));
         return;
     }
 
@@ -82,11 +83,12 @@ public class SimpleController implements Controller {
         int row = userDao.getRow(tableName)+1;
         for(int i=1; i<row; i++){
             User user = userDao.get(i,tableName);
-            Map<String, Object> tampMap = new HashMap<>();
-            tampMap.put("word",user.getWord());
-            tampMap.put("mean",user.getMean());
-            dataList.add(tampMap);
-
+            if(user !=null){
+                Map<String, Object> tampMap = new HashMap<>();
+                tampMap.put("word",user.getWord());
+                tampMap.put("mean",user.getMean());
+                dataList.add(tampMap);
+            }
         }
         return dataList;
     }

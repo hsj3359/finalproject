@@ -101,15 +101,17 @@
               </div>
               <input id="DatatableName" style="width: 80%">
             </div>
-            <table id="wordTable">
+            <table id="wordTable" onclick='disable()'>
               <tr>
                 <td>단어</td>
                 <td colspan="99">뜻</td>
               </tr>
 
             </table>
-            <button style="float: right" class="mt-3" onclick="makeData()">테이블 생성하기</button>
-            <button style="float:left;" onclick="downloadCSV();">csv파일 만들기</button>
+            <div>
+              <button style="float: right" class="mt-3" onclick="makeData()">테이블 저장하기</button>
+              <button style="float:left;"class="mt-3" onclick="downloadCSV();">csv파일 만들기</button>
+            </div>
             <script>
                 const reader = new FileReader()
                 const select = document.getElementById("tableName");
@@ -122,12 +124,25 @@
                 var rowArray = new Array();
                 var tableListArray = new Array();
                 var ranmdomAry = new Array;
-                var wrongAray = new Array;
 
                 var count =0;
                 var Anum =0;
 
                 var first = true;
+                var modify = true;
+
+                function disable(){
+                  var tamp = event.target.id.split("-")
+                  console.log(tamp);
+                  if(totalArray.length>tamp[0]&&totalArray[tamp[0]].length>tamp[1]){
+                    console.log("em");
+                    if(modify){
+                      console.log("2");
+                      event.target.disabled = false;
+                      modify= false;
+                    }
+                  }
+                }
 
                 reader.onload = function (e) {
                     var re = /\r?\n|\r/;
@@ -190,6 +205,7 @@
 
                 function makeCell(i,j) {
                     cell = row.insertCell();
+                    cell.id = "cell"+i+"-"+j;
                     cell.innerHTML = "<input onkeydown='makeTable()' type='text' id=" +i + "-" + j + ">";
                     var input =document.getElementById(i + "-" + j)
                     input.focus();
@@ -212,19 +228,79 @@
                 }
 
                 function makeTable(i,j) {
-                    var currentInput = document.getElementById(totalArray.length + "-" + rowArray.length);
-                    var inputData = currentInput.value;
+                    var inputData = event.target.value;
                     if (window.event.keyCode == 13){
                         if(inputData!=""){
-                            currentInput.disabled = true;
-                            rowArray.push(inputData);
-                            makeCell(totalArray.length, rowArray.length)
+                            event.target.disabled = true;
+                            var tamp = event.target.id.split("-");
+                            if(totalArray.length>tamp[0]&&totalArray[tamp[0]].length>tamp[1]){
+                              if(totalArray[tamp[0]][tamp[1]]!=event.target.value){
+                               //update
+                                var tableName = tableNameInput.value
+                                for(var i=0; i<tableListArray.length; i++){
+                                  if(tableName==tableListArray[i]){
+                                    console.log(tableName);
+                                    console.log(tableListArray[i]);
+                                    totalArray[tamp[0]][tamp[1]] = event.target.value;
+                                    if(tamp[1]==0){
+                                      for(var i=1; i<totalArray[tamp[0]].length; i++){
+                                        var tampArray = [tamp[0],i];
+                                        id = getId(tampArray);
+                                        var tampData = [id,event.target.value,totalArray[tamp[0]][i]]
+                                        var tampJson = JSON.stringify({
+                                          "table": [tableName],
+                                          "data": tampData
+                                        });
+                                        $.ajax({
+                                          url: "updateData",
+                                          type: "POST",
+                                          data: tampJson,
+                                          contentType: "application/json; charset=UTF-8",
+                                          success: function (data) {
+                                            console.log("success")
+                                          },
+                                          error: function () {
+                                            console.log("false")
+                                          }
+                                        });
+                                      }
+                                    }
+                                    else{
+                                      console.log("anjwl?")
+                                      id = getId(tamp);
+                                      var tampData = [id,totalArray[tamp[0]][0],event.target.value]
+                                      var tampJson = JSON.stringify({
+                                        "table": [tableName],
+                                        "data": tampData
+                                      });
+                                      $.ajax({
+                                        url: "updateData",
+                                        type: "POST",
+                                        data: tampJson,
+                                        contentType: "application/json; charset=UTF-8",
+                                        success: function (data) {
+                                          console.log("success")
+                                        },
+                                        error: function () {
+                                          console.log("false")
+                                        }
+                                      });
+                                    }
+                                  }
+                                }
+                                }
+                              modify = true;
+                            }
+                            else{
+                              rowArray.push(inputData);
+                              makeCell(totalArray.length, rowArray.length)
+                            }
                         }
                     }
                     else if (window.event.keyCode == 40) {
                         if (inputData != "") {
                             if (rowArray.length >= 1) {
-                                currentInput.disabled = true;
+                                event.target.disabled = true;
                                 rowArray.push(inputData);
                                 totalArray.push(rowArray);
                                 rowArray = new Array();
@@ -244,6 +320,42 @@
                             else alert("입력이 잘못되었습니다.")
                         }
                     }
+                    // else if(window.event.keyCode == 38){
+                    //     //삭제
+                    //     if(event.target.id=="0-0"){
+                    //         if(totalArray.length>0){
+                    //           var tableName = tableNameInput.value;
+                    //             for(var i=1; i<totalArray[0].length; i++){
+                    //                 var id = i;
+                    //               var tampJson = JSON.stringify({
+                    //                 "table": tableName,
+                    //                 "id": id
+                    //               })
+                    //                 $.ajax({
+                    //                     url: "deleteData",
+                    //                     type: "POST",
+                    //                     data: tampJson,
+                    //                     contentType: "application/json; charset=UTF-8",
+                    //                     success: function (data) {
+                    //                       console.log("success")
+                    //                     },
+                    //                     error: function () {
+                    //                       console.log("false")
+                    //                     }
+                    //                 });
+                    //
+                    //             }
+                    //             table.deleteRow(1);
+                    //             totalArray.pop(0);
+                    //         }
+                    //         else{
+                    //             alert("삭제하실수 없습니다.")
+                    //         }
+                    //     }
+                    //     else{
+                    //
+                    //     }
+                    // }
                 }
 
                 function changeTable() {
@@ -303,6 +415,7 @@
                     var modalLable = document.getElementById("myModalLabel");
                     modalLable.innerHTML = modalName;
                     var tableData = new Array();
+                    var tampArray = new Array();
                     var data = tableNameInput.value;
                     $.ajax({
                         url: "sendData",
@@ -312,7 +425,7 @@
                         success: function (data) {
                             var databaseData = document.getElementById("dataBase");
                             text = "";
-                            var tampArray = new Array();
+
                             for (var i = 0; i < data.length; i++) {
                                 if (i > 0) {
                                     if (data[i].word == data[i - 1].word) {
@@ -356,7 +469,6 @@
                         text += "<br>";
                     }
                     currentDataDiv.innerHTML = text;
-
                 }
                 function dataBuild() {
                   var data = select.value;
@@ -442,14 +554,17 @@
                         success: function (data) {
                             alert("테이블을 삭제하였습니다.");
                             select.removeChild(document.getElementById(tableName))
-                          for(var i=0; i<tableListArray.length;i++){
-                            if(tableName==tableListArray[i])tableListArray.pop(i);
-                          }
+
                         },
                         error: function () {
                             alert("error deleteTable");
                         }
                     });
+                  var tampArray = tableListArray;
+                  tableListArray= new Array();
+                  for(var i=0; i<tampArray.length;i++){
+                    if(tableName!=tampArray[i]) tableListArray.push(tampArray[i]);
+                  }
                 }
                 function writeWord(){
                    var tampNum = totalArray[ranmdomAry[count]].length;
@@ -470,7 +585,6 @@
                         $('#textArea').append(a+b+c+d);
                     }
                     else{
-                        wrongAray.push(ranmdomAry[count]);
                         if(Anum==0){
                             var c= totalArray[ranmdomAry[count]][0]+"<br>"
                             var c_1= totalArray[ranmdomAry[count]][1];
@@ -531,7 +645,6 @@
                                 viewWord.innerHTML = "문제를 모두 푸셨습니다.<br> 다시하고 싶으시면 엔터키를 눌러주세요";
                                 count=0;
                                 first = true;
-                                wrongAray = new Array();
                                 return;
                             }
                         }

@@ -26,18 +26,7 @@ public class test {
         tableDao = applicationContext.getBean("tableDao",TableDao.class);
     }
 //
-//    @Test
-//    public void get() throws SQLException, ClassNotFoundException {
-//        int row = userDao.getRow("wordbook1")+1;
-//        for(int i=1; i<row; i++){
-//            User user = userDao.get(i);
-//            assertThat(user.getId(), is(i));
-//            System.out.println(user.getId());
-//            System.out.println(user.getWord());
-//            System.out.println(user.getMean());
-//        }
-//
-//    }
+
 //
     @Test
     public void insert() throws SQLException, ClassNotFoundException {
